@@ -70,7 +70,7 @@ function getDocument(document) {
 function getFileType(document) {
     let doc = getDocument(document);
 
-    if (doc) {
+    if (doc && doc.fileName) {
         return doc.fileName.substr((doc.fileName.lastIndexOf('.') + 1), doc.fileName.length);
     }
     else {

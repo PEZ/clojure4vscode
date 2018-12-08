@@ -7,6 +7,7 @@ import terminal from './terminal';
 import CalvaCompletionItemProvider from './providers/completion';
 import TextDocumentContentProvider from './providers/content';
 import HoverProvider from './providers/hover';
+import {testDataProvider, goToFile} from './providers/testData'
 import DefinitionProvider from './providers/definition';
 import EvaluateMiddleWare from './repl/middleware/evaluate';
 import LintMiddleWare from './repl/middleware/lint';
@@ -15,7 +16,6 @@ import annotations from './providers/annotations';
 import select from './repl/middleware/select';
 
 import * as calvaLib from '../lib/calva';
-
 
 function onDidSave(document) {
     let {
@@ -83,11 +83,14 @@ function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand('calva.evalCurrentFormInREPLTerminal', terminal.evalCurrentFormInREPLTerminalCommand));
     context.subscriptions.push(vscode.commands.registerCommand('calva.evalCurrentTopLevelFormInREPLTerminal', terminal.evalCurrentTopLevelFormInREPLTerminalCommand));
     context.subscriptions.push(vscode.commands.registerCommand('calva.clearInlineResults', annotations.clearEvaluationDecorations))
+    context.subscriptions.push(vscode.commands.registerCommand('calva.openFile', goToFile));
 
     // PROVIDERS
     context.subscriptions.push(vscode.languages.registerCompletionItemProvider(state.mode, new CalvaCompletionItemProvider()));
     context.subscriptions.push(vscode.languages.registerHoverProvider(state.mode, new HoverProvider()));
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(state.mode, new DefinitionProvider()));
+
+    context.subscriptions.push(vscode.window.registerTreeDataProvider('clojure', testDataProvider));
 
     vscode.workspace.registerTextDocumentContentProvider('jar', new TextDocumentContentProvider());
 

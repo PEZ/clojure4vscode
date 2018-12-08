@@ -65,6 +65,14 @@
                 }
             }
         ],
+        "views": {
+            "test": [
+                {
+                    "id": "clojure",
+                    "name": "Clojure"
+                }
+            ]
+        },
         "configuration": {
             "type": "object",
             "title": "Calva",
@@ -318,7 +326,11 @@
             {
                 "command": "calva.evalCurrentTopLevelFormInREPLTerminal",
                 "key": "ctrl+alt+v alt+space"
-            }
+            },
+            {
+				"command": "calva.openFile",
+				"title": "Open File"
+			}
         ],
         "menus": {
             "commandPalette": []

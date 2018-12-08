@@ -4,10 +4,9 @@ import * as state from '../../state';
 import repl from '../client';
 import evaluate from './evaluate';
 import * as util from '../../utilities';
+import {Outcome, testDataProvider} from '../../providers/testData'
 
 import * as calvaLib from '../../../lib/calva';
-
-
 
 let diagnosticCollection = vscode.languages.createDiagnosticCollection('calva');
 
@@ -23,7 +22,10 @@ function markTestResults(responsesArray, log = true) {
             if (results !== null) {
                 _.each(results, (tests, ns) => {
                     _.each(tests, (asserts, test) => {
+                        testDataProvider.onTestResult(asserts);
+
                         _.each(asserts, a => {
+
                             if (a.type == "error") {
                                 if (log) {
                                     chan.appendLine("ERROR in: " + ns + ": " + a.file + ", line " + a.line +
