@@ -18,6 +18,10 @@ export function stripAnsi(str: string) {
     return str.replace(/[\u001B\u009B][[\]()#;?]*(?:(?:(?:[a-zA-Z\d]*(?:;[a-zA-Z\d]*)*)?\u0007)|(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-ntqry=><~]))/g, "")
 }
 
+function stripClass(str: string) {
+    return str.replace(/^class /, "");
+}
+
 async function quickPickSingle(opts: { values: string[], saveAs?: string, placeHolder: string, autoSelect?: boolean }) {
     if (opts.values.length == 0)
         return;
@@ -450,4 +454,5 @@ export {
     quickPickSingle,
     quickPickMulti,
     getTestUnderCursor,
+    stripClass,
 };

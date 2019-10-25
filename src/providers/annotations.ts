@@ -93,6 +93,7 @@ function clearEvaluationDecorations(editor?: vscode.TextEditor) {
         state.cursor.delete(editor.document.uri + ':selectionDecorationRanges:' + status);
         setSelectionDecorations(editor, [], status);
     }
+    clearCompilationErrors();
 }
 
 function decorateResults(resultString, hasError, codeSelection: vscode.Range, editor) {
@@ -144,11 +145,24 @@ function copyHoverTextCommand(args: { [x: string]: string; }) {
     vscode.env.clipboard.writeText(args["text"]);
 }
 
+function markCompilationError(range: vscode.Range, message: string, documentUri: vscode.Uri) {
+    const diagnostic = new vscode.Diagnostic(range, message, vscode.DiagnosticSeverity.Error);
+    const diagnosticCollection = <vscode.DiagnosticCollection>state.deref().get('compilationDiagnosticCollection');
+    diagnosticCollection.set(documentUri, [diagnostic]);
+}
+
+function clearCompilationErrors() {
+    const diagnosticCollection = state.deref().get('compilationDiagnosticCollection');
+    diagnosticCollection.clear();
+}
+
 export default {
     AnnotationStatus,
     clearEvaluationDecorations,
     decorateResults,
     decorateSelection,
     onDidChangeTextDocument,
-    copyHoverTextCommand
+    copyHoverTextCommand,
+    markCompilationError,
+    clearCompilationErrors,
 };

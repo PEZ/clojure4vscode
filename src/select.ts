@@ -57,7 +57,19 @@ function selectCurrentForm(document = {}) {
     }
 }
 
+function selectContainingForm(doc, position): vscode.Range {
+    const allText = doc.getText(),
+        ast = paredit.parse(allText),
+        idx = doc.offsetAt(position),
+        parentForm = paredit.navigator.sexpRange(ast, idx),
+        startPosition = doc.positionAt(parentForm[0]),
+        endPosition = doc.positionAt(parentForm[1]),
+        range = new vscode.Range(startPosition, endPosition);
+    return range;
+}
+
 export default {
     getFormSelection: getFormSelection,
-    selectCurrentForm: selectCurrentForm
+    selectCurrentForm: selectCurrentForm,
+    selectContainingForm: selectContainingForm,
 };

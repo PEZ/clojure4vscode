@@ -37,6 +37,7 @@ const initialData = {
     outputChannel: vscode.window.createOutputChannel("Calva says"),
     connectionLogChannel: vscode.window.createOutputChannel("Calva Connection Log"),
     diagnosticCollection: vscode.languages.createDiagnosticCollection('calva: Evaluation errors'),
+    compilationDiagnosticCollection: vscode.languages.createDiagnosticCollection('Calva: Compilation errors'),
     analytics: null
 };
 

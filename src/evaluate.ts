@@ -8,6 +8,7 @@ import * as util from './utilities';
 import { activeReplWindow } from './repl-window';
 import { NReplSession } from './nrepl';
 import statusbar from './statusbar'
+import { stripClass } from './utilities';
 
 function addAsComment(c: number, result: string, codeSelection: vscode.Selection, editor: vscode.TextEditor, selection: vscode.Selection) {
     const indent = `${' '.repeat(c)}`, output = result.replace(/\n\r?$/, "").split(/\n\r?/).join(`\n${indent};;    `), edit = vscode.TextEdit.insert(codeSelection.end, `\n${indent};; => ${output}\n`), wsEdit = new vscode.WorkspaceEdit();
@@ -101,7 +102,15 @@ async function evaluateSelection(document = {}, options = {}) {
                 }
 
                 const message = util.stripAnsi(err.join("\n"));
-                annotations.decorateSelection(message, codeSelection, editor, annotations.AnnotationStatus.ERROR);
+                const exceptionClassName = stripClass(e);
+
+                if (exceptionClassName === "clojure.lang.Compiler$CompilerException") {
+                    const range = getCompilationErrorRange(err[0]);
+                    annotations.markCompilationError(range, message, editor.document.uri);
+                } else {
+                    annotations.decorateSelection(message, codeSelection, editor, annotations.AnnotationStatus.ERROR);
+                }
+
                 annotations.decorateResults(message, true, codeSelection, editor);
                 if (asComment) {
                     addAsComment(c, message, codeSelection, editor, selection);
@@ -110,6 +119,16 @@ async function evaluateSelection(document = {}, options = {}) {
         }
     } else
         vscode.window.showErrorMessage("Not connected to a REPL")
+
+    function getCompilationErrorRange(errorMessage: string): vscode.Range {
+        const errorLocation = errorMessage.match(/\d+:\d+/);
+        const lineAndColumn = errorLocation[0].split(":");
+        const line = parseInt(lineAndColumn[0], 10) - 1;
+        const column = parseInt(lineAndColumn[1], 10) - 1;
+        const errorPosition = new vscode.Position(line, column);
+        const range = select.selectContainingForm(doc, errorPosition);
+        return range;
+    }
 }
 
 function normalizeNewLines(strings: string[]): string {
