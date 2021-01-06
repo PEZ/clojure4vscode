@@ -6,12 +6,14 @@ const CALVA_MAIN = {
   target: 'node',
   // the entry point of this extension,
   // 📖 -> https://webpack.js.org/configuration/entry-context/
-  entry: path.resolve(__dirname, 'src/extension.ts'),
+  entry: {
+    extension: path.resolve(__dirname, 'src/extension.ts'),
+    debug: path.resolve(__dirname, 'src/debugger/calva-debug.ts')
+  },
   output: {
     // the bundle is stored in the 'dist' folder (check package.json),
     // 📖 -> https://webpack.js.org/configuration/output/
     path: path.resolve(__dirname, 'out'),
-    filename: 'extension.js',
     libraryTarget: 'commonjs2',
     devtoolModuleFilenameTemplate: '../[resource-path]',
   },

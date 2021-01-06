@@ -4,6 +4,7 @@ Changes to Calva.
 
 ## [Unreleased]
 - Fix: [Dimming ignored forms does not work correctly with metadata](https://github.com/BetterThanTomorrow/calva/issues/908)
+- [Make webpack create debug.js file for direct use with node](https://github.com/BetterThanTomorrow/calva/pull/935)
 
 ## [2.0.146 - 2021-01-04]
 - Fix: [Slurp forward sometimes joins forms to one](https://github.com/BetterThanTomorrow/calva/issues/883)
