@@ -612,25 +612,52 @@ export class LispTokenCursor extends TokenCursor {
      * @param commentIsTopLevel? Controls
      */
     rangeForDefun(offset: number, depth = 0, commentCreatesTopLevel = true): [number, number] {
-        const cursor = this.clone();
-        while (cursor.forwardSexp()) {
-            if (cursor.offsetEnd >= offset) {
-                if (depth < 1 && cursor.getPrevToken().raw === ')') {
-                    const commentCursor = cursor.clone();
-                    commentCursor.previous();
-                    if (commentCursor.getFunctionName() === 'comment' && commentCreatesTopLevel) {
-                        commentCursor.backwardList();
-                        commentCursor.forwardWhitespace();
-                        commentCursor.forwardSexp();
-                        return commentCursor.rangeForDefun(offset, depth + 1);
-                    }
-                }
-                const end = cursor.offsetStart;
-                cursor.backwardSexp();
-                return [cursor.offsetStart, end];
-            }
+        let cursor = this.doc.getTokenCursor(offset);
+        const [initialFormStart] = cursor.rangeForCurrentForm(offset);
+        cursor = this.doc.getTokenCursor(initialFormStart);
+        while (cursor.offsetEnd < offset && cursor.forwardSexp()) {}
+        if (cursor.getToken().type === 'eol' && cursor.getPrevToken().raw !== ')') {
+             return [offset, offset]
         }
-        return [offset, offset]
+        if (cursor.getPrevToken().raw === ')') {
+            cursor.backwardSexp(); 
+            cursor.downList();
+        }
+        // If comment block(s) should be treated as top-level and initial cursor was placed 
+        // close to "comment" symbol, then we first perform "nested traveling down", potentially
+        //  skipping any additional nested comment forms on the way).
+        if (commentCreatesTopLevel) {
+            let nearbyCommentSymbol : boolean;
+            do {
+                const [fl, fh] = cursor.getFunctionSexpRange();
+                nearbyCommentSymbol = cursor.getFunctionName() === 'comment' && ((fl <= cursor.offsetStart && cursor.offsetStart <= fh) || cursor.getPrevToken().raw === 'comment');
+                if (!nearbyCommentSymbol) {
+                    break;
+                }
+                cursor = cursor.doc.getTokenCursor(fh);
+                cursor.forwardWhitespace();
+                if (cursor.getToken().raw === '(') {
+                    cursor.downList();
+                } else {
+                    break;
+                }
+            } while (nearbyCommentSymbol)
+        }
+        // Keep navigating "forward up sexp" when possible. Always remember last visited "non-comment" cursor.
+        // If comment form is reached on the way up, return that last visited non-comment form cursor..        
+        let lastValidTopLevelFormCursor = cursor.clone();
+        do {
+            const currentFormIsComment = cursor.getFunctionName() === 'comment';
+            lastValidTopLevelFormCursor = cursor.clone();
+            cursor.forwardList();
+            if (!cursor.upList()) {
+                break;
+            }
+            if (commentCreatesTopLevel && currentFormIsComment) {
+                return lastValidTopLevelFormCursor.rangeForCurrentForm(0);
+            }
+        } while (cursor.withinValidList());
+        return cursor.rangeForCurrentForm(cursor.offsetStart);
     }
 
     rangesForTopLevelForms(): [number, number][] {
